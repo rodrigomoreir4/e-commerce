@@ -41,7 +41,7 @@ public class ProductController {
     public String updateProductQuantity(@RequestParam String name, @RequestParam int quantity) {
         Product product = productRepository.findByName(name.toLowerCase());
         if (product != null){
-            product.setStock(quantity);
+            product.setQuantity(quantity);
             productRepository.save(product);
             return "Product quantity updated!";
         } else {

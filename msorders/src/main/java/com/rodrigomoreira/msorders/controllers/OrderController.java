@@ -5,6 +5,7 @@ import com.rodrigomoreira.msorders.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private KafkaTemplate<String, Order> kafkaTemplate;
 
     @GetMapping
     public List<Order> getAllOrders(){
@@ -30,6 +34,8 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody Order order) {
+        order.setName(order.getName().toLowerCase());
+        kafkaTemplate.send("estoque-topico", order);
         Order newOrder = orderService.save(order);
         return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
     }
@@ -39,7 +45,7 @@ public class OrderController {
         Optional<Order> order = orderService.findById(id);
         if (order.isPresent()){
             Order existingOrder = order.get();
-            existingOrder.setProductName(updateOrder.getProductName());
+            existingOrder.setName(updateOrder.getName());
             existingOrder.setQuantity(updateOrder.getQuantity());
             return ResponseEntity.ok(orderService.save(existingOrder));
         } else {

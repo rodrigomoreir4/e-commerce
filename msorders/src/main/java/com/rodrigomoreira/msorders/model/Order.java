@@ -13,11 +13,11 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String productName;
+    private String name;
     private Integer quantity;
 
-    public Order(String productName, Integer quantity) {
-        this.productName = productName;
+    public Order(String name, Integer quantity) {
+        this.name = name;
         this.quantity = quantity;
     }
 

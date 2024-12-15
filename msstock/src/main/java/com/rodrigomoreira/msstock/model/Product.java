@@ -14,11 +14,11 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Integer stock;
+    private Integer quantity;
 
     public Product(String name, Integer stock) {
         this.name = name;
-        this.stock = stock;
+        this.quantity = quantity;
     }
 
 }
