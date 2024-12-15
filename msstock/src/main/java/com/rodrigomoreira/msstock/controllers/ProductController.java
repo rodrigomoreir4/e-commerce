@@ -1,8 +1,9 @@
 package com.rodrigomoreira.msstock.controllers;
 
 import com.rodrigomoreira.msstock.model.Product;
-import com.rodrigomoreira.msstock.repositories.ProductRepository;
+import com.rodrigomoreira.msstock.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,46 +14,41 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProduct(){
-        return productRepository.findAll();
+    public ResponseEntity<List<Product>> getAllProducts(){
+        List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/find")
-    public  ResponseEntity<Product> getProduct(@RequestParam String name) {
-        Product product = productRepository.findByName(name);
-        if (product != null) {
-            return ResponseEntity.ok(product);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{name}")
+    public  ResponseEntity<Product> getProductBynName(@PathVariable String name) {
+        Product product = productService.getProductByName(name);
+        return product != null ? ResponseEntity.ok(product) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public String addProduct(@RequestBody Product product) {
-        product.setName(product.getName().toLowerCase());
-        productRepository.save(product);
-        return "Product added to stock!";
+    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+        Product savedProduct = productService.addProduct(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
-    @PutMapping
-    public String updateProductQuantity(@RequestParam String name, @RequestParam int quantity) {
-        Product product = productRepository.findByName(name.toLowerCase());
-        if (product != null){
-            product.setQuantity(quantity);
-            productRepository.save(product);
-            return "Product quantity updated!";
-        } else {
-            return "Product not found or insufficient quantity!";
+    @PutMapping("/{name}")
+    public ResponseEntity<Product> updateProductQuantity(@PathVariable String name, @RequestParam int quantity) {
+        Product product = productService.getProductByName(name);
+        try {
+            Product updatedProduct = productService.updateProductQuantity(name, quantity);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
-        productRepository.deleteById(id);
-        return "Product removed from stock!";
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProductById(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
